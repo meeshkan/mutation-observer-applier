@@ -4,8 +4,6 @@ export type IAttributes = {
 
 export const getAttributes = (element: any): IAttributes => {
     const attributesObject: IAttributes = {};
-    const nodes: string[] = [];
-    const values: string[] = [];
     for (let attribute, i = 0, attributes = element.attributes, n = attributes.length; i < n; i++) {
         attribute = attributes[i];
         attributesObject[attribute.nodeName] = attribute.nodeValue;
