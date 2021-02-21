@@ -1,21 +1,23 @@
 import { JSDOM } from 'jsdom';
 import { getXPath } from './lib/xpath';
+import { getAttributes } from './lib/attributes'; 
+import type { IAttributes } from './lib/attributes';
 
 type INode = {
     type: number;
     value: string | null;
     outerHTML: string | null;
-    attributes: string[];
+    attributes: IAttributes;
     xpath: string;
 }
 
 type IMutationRecord = {
     type: 'attributes' | 'characterData' | 'childList';
-    target: INode;
-    addedNodes: INode[];
-    removedNodes: INode[];
-    previousSibling: INode;
-    nextSibling: INode;
+    target: INode | null;
+    addedNodes: (INode | null)[];
+    removedNodes: (INode | null)[];
+    previousSibling: INode | null;
+    nextSibling: INode | null;
     attributeName: string | null;
     attributeNamespace: string | null;
     oldValue?: string | null;
@@ -37,12 +39,16 @@ class MutationObserverDiff {
     }
 
     serializeMutations(mutations: MutationRecord[]): IMutationRecord[] {
-        const nodeInfo = (node: any): INode => {
+        const nodeInfo = (node: any): INode | null => {
+            if (!node) {
+                return null;
+            }
+
             return {
                 type: node.nodeType,
                 value: node.nodeValue,
                 outerHTML: node.outerHTML,
-                attributes: node.attributes,
+                attributes: getAttributes(node),
                 xpath: getXPath(node),
             }
         };
@@ -74,6 +80,27 @@ class MutationObserverDiff {
                      * mutation.target.
                      * The attribute name is in mutation.attributeName, and
                      * its previous value is in mutation.oldValue. */
+                    const document = this.dom.window.document;
+                    const target = mutation.target;
+                    if (!target) {
+                        return;
+                    }
+
+                    const targetXPath = target?.xpath;
+                    const targetAttributes = target?.attributes;
+                    if (!targetXPath || !targetAttributes) {
+                        return;
+                    }
+
+                    const targetInDOM = document.evaluate(targetXPath, document, null, XPathResult.FIRST_ORDERED_NODE_TYPE, null).singleNodeValue as HTMLElement;
+                    const mutatedAttributeName = mutation.attributeName as string;
+                    if (mutatedAttributeName) {
+                        const mutatedAttributeValue = targetAttributes[mutatedAttributeName];
+                        console.log(targetInDOM);
+                        targetInDOM.setAttribute(mutatedAttributeName, mutatedAttributeValue);
+                        console.log(targetInDOM);
+                    }
+
                     break;
                 case 'characterData':
                     break;
