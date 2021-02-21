@@ -84,9 +84,19 @@ export default class MutationObserverDiff {
         });
     };
 
+    private getElementByXPath(xpath: string): HTMLElement {
+        const document = this.dom.window.document;
+        return document.evaluate(
+            xpath,
+            document,
+            null,
+            XPathResult.FIRST_ORDERED_NODE_TYPE,
+            null
+        ).singleNodeValue as HTMLElement;
+    }
+
     applyMutations(serializedMutations: IMutationRecord[]) {
         serializedMutations.forEach((mutation: IMutationRecord) => {
-            const document = this.dom.window.document;
             const target = mutation.target;
             if (!target) {
                 return;
@@ -104,33 +114,14 @@ export default class MutationObserverDiff {
                         return;
                     }
 
-                    targetInDom = document.evaluate(
-                        targetXPath,
-                        document,
-                        null,
-                        XPathResult.FIRST_ORDERED_NODE_TYPE,
-                        null
-                    ).singleNodeValue as HTMLElement;
-
+                    targetInDom = this.getElementByXPath(targetXPath);
                     let previousSiblingInDom, nextSiblingInDom;
                     if (mutation.previousSibling && mutation.previousSibling.xpath) {
-                        previousSiblingInDom = document.evaluate(
-                            mutation.previousSibling.xpath,
-                            document,
-                            null,
-                            XPathResult.FIRST_ORDERED_NODE_TYPE,
-                            null
-                        ).singleNodeValue as HTMLElement;
+                        previousSiblingInDom = this.getElementByXPath(mutation.previousSibling.xpath);
                     }
 
                     if (mutation.nextSibling && mutation.nextSibling.xpath) {
-                        nextSiblingInDom = document.evaluate(
-                            mutation.nextSibling.xpath,
-                            document,
-                            null,
-                            XPathResult.FIRST_ORDERED_NODE_TYPE,
-                            null
-                        ).singleNodeValue as HTMLElement;
+                        nextSiblingInDom = this.getElementByXPath(mutation.nextSibling.xpath);
                     }
 
                     if (!previousSiblingInDom && !nextSiblingInDom) {
@@ -138,6 +129,7 @@ export default class MutationObserverDiff {
                     }
 
                     mutation.addedNodes.forEach((addedNode) => {
+                        const document = this.dom.window.document;
                         const newElementInDom = document.createElement(addedNode.tagName);
                         newElementInDom.innerHTML = addedNode.innerHTML;
                         if (previousSiblingInDom) {
@@ -165,14 +157,7 @@ export default class MutationObserverDiff {
                         return;
                     }
 
-                    targetInDom = document.evaluate(
-                        targetXPath,
-                        document,
-                        null,
-                        XPathResult.FIRST_ORDERED_NODE_TYPE,
-                        null
-                    ).singleNodeValue as HTMLElement;
-
+                    targetInDom = this.getElementByXPath(targetXPath);
                     const targetAttributes = target?.attributes;
                     if (!targetAttributes) {
                         return;
@@ -197,14 +182,7 @@ export default class MutationObserverDiff {
                         return;
                     }
 
-                    const targetParentInDom = document.evaluate(
-                        targetParentXPath,
-                        document,
-                        null,
-                        XPathResult.FIRST_ORDERED_NODE_TYPE,
-                        null
-                    ).singleNodeValue as HTMLElement;
-
+                    const targetParentInDom = this.getElementByXPath(targetParentXPath);
                     targetInDom = targetParentInDom.firstChild as characterData;
                     targetInDom.replaceData(0, targetInDom.length, targetData);
                     break;
