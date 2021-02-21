@@ -2,10 +2,9 @@
   "name": "mutation-observer-diff",
   "version": "1.0.0",
   "description": "Apply MutationObserver mutations to a DOM",
-  "main": "index.js",
+  "main": "src/index.js",
   "scripts": {
-    "build": "tsc --project ./",
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "build": "tsc"
   },
   "author": "Meeshkan",
   "license": "MIT",
