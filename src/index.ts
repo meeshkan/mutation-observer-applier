@@ -106,9 +106,6 @@ export default class MutationObserverDiff {
 
             switch (mutation.type) {
                 case 'childList':
-                    /* One or more children have been added to and/or removed
-                     * from the tree.
-                     * (See mutation.addedNodes and mutation.removedNodes.) */
                     targetXPath = target.xpath;
                     if (!targetXPath) {
                         return;
@@ -148,10 +145,6 @@ export default class MutationObserverDiff {
                     });
                     break;
                 case 'attributes':
-                    /* An attribute value changed on the element in
-                     * mutation.target.
-                     * The attribute name is in mutation.attributeName, and
-                     * its previous value is in mutation.oldValue. */
                     targetXPath = target.xpath;
                     if (!targetXPath) {
                         return;
