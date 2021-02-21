@@ -15,4 +15,3 @@ export const getAttributes = (element: any): IAttributes => {
 
     return attributesObject;
 };
-
