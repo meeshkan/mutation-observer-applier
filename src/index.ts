@@ -23,7 +23,7 @@ type IMutationRecord = {
     oldValue?: string | null;
 }
 
-class MutationObserverDiff {
+export default class MutationObserverDiff {
     private dom: JSDOM;
 
     constructor(initialDom: string) {
@@ -96,9 +96,12 @@ class MutationObserverDiff {
                     const mutatedAttributeName = mutation.attributeName as string;
                     if (mutatedAttributeName) {
                         const mutatedAttributeValue = targetAttributes[mutatedAttributeName];
-                        console.log(targetInDOM);
+                        if (!mutatedAttributeValue) {
+                           targetInDOM.removeAttribute(mutatedAttributeName);
+                           return;
+                        }
+
                         targetInDOM.setAttribute(mutatedAttributeName, mutatedAttributeValue);
-                        console.log(targetInDOM);
                     }
 
                     break;
