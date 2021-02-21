@@ -7,6 +7,7 @@ type INode = {
     type: number;
     value: string | null;
     outerHTML: string | null;
+    innerHTML: string | null;
     attributes: IAttributes;
     xpath: string;
     parentXPath?: string;
@@ -49,8 +50,11 @@ export default class MutationObserverDiff {
             const xpath = getXPath(node);
             const info = {
                 type: node.nodeType,
+                name: node.nodeName,
+                tagName: node.tagName,
                 value: node.nodeValue,
                 outerHTML: node.outerHTML,
+                innerHTML: node.innerHTML,
                 attributes: getAttributes(node),
                 xpath: getXPath(node),
                 data: node.data,
@@ -88,20 +92,75 @@ export default class MutationObserverDiff {
                 return;
             }
 
-            let targetInDom;
+            let targetInDom, targetXPath;
 
             switch (mutation.type) {
                 case 'childList':
                     /* One or more children have been added to and/or removed
                      * from the tree.
                      * (See mutation.addedNodes and mutation.removedNodes.) */
+                    targetXPath = target.xpath;
+                    if (!targetXPath) {
+                        return;
+                    }
+
+                    targetInDom = document.evaluate(
+                        targetXPath,
+                        document,
+                        null,
+                        XPathResult.FIRST_ORDERED_NODE_TYPE,
+                        null
+                    ).singleNodeValue as HTMLElement;
+
+                    let previousSiblingInDom, nextSiblingInDom;
+                    if (mutation.previousSibling && mutation.previousSibling.xpath) {
+                        previousSiblingInDom = document.evaluate(
+                            mutation.previousSibling.xpath,
+                            document,
+                            null,
+                            XPathResult.FIRST_ORDERED_NODE_TYPE,
+                            null
+                        ).singleNodeValue as HTMLElement;
+                    }
+
+                    if (mutation.nextSibling && mutation.nextSibling.xpath) {
+                        nextSiblingInDom = document.evaluate(
+                            mutation.nextSibling.xpath,
+                            document,
+                            null,
+                            XPathResult.FIRST_ORDERED_NODE_TYPE,
+                            null
+                        ).singleNodeValue as HTMLElement;
+                    }
+
+                    if (!previousSiblingInDom && !nextSiblingInDom) {
+                        return;
+                    }
+
+                    mutation.addedNodes.forEach((addedNode) => {
+                        const newElementInDom = document.createElement(addedNode.tagName);
+                        newElementInDom.innerHTML = addedNode.innerHTML;
+                        if (previousSiblingInDom) {
+                            targetInDom.insertBefore(newElementInDom, previousSiblingInDom.nextSibling);
+                        } else {
+                            targetInDom.insertBefore(newElementInDom, nextSiblingInDom);
+                        }
+                    });
+
+                    mutation.removedNodes.forEach((removedNode) => {
+                        if (previousSiblingInDom) {
+                            targetInDom.removeChild(previousSiblingInDom.nextSibling);
+                        } else {
+                            targetInDom.removeChild(nextSiblingInDom.previousSibling);
+                        }
+                    });
                     break;
                 case 'attributes':
                     /* An attribute value changed on the element in
                      * mutation.target.
                      * The attribute name is in mutation.attributeName, and
                      * its previous value is in mutation.oldValue. */
-                    const targetXPath = target.xpath;
+                    targetXPath = target.xpath;
                     if (!targetXPath) {
                         return;
                     }
