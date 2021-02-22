@@ -8,7 +8,6 @@ import type { IStyleSheet } from './lib/stylesheets';
 type INode = {
     type: number;
     value: string | null;
-    outerHTML: string | null;
     innerHTML: string | null;
     attributes: IAttributes;
     xpath: string;
@@ -56,7 +55,6 @@ export default class MutationObserverDiff {
                 name: node.nodeName,
                 tagName: node.tagName,
                 value: node.nodeValue,
-                outerHTML: node.outerHTML,
                 innerHTML: node.innerHTML,
                 attributes: getAttributes(node),
                 xpath: getXPath(node),
