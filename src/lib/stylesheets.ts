@@ -12,12 +12,9 @@ export const getCSSStyleSheet = (node: HTMLStyleElement): IStyleSheet => {
         return {};
     }
 
-    const cssRules: IStyleSheet = [];
-    for (let index = 0; index < sheet.cssRules.length; index++) {
-        cssRules.push({
-            cssText: sheet.cssRules[index].cssText,
-        });
-    }
-
-    return { cssRules };
+    return Array.from(sheet.cssRules).map((cssRule) => {
+        return {
+            cssText: cssRule.cssText,
+        }
+    });
 };
