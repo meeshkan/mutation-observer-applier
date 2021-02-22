@@ -1,7 +1,9 @@
 import { JSDOM } from 'jsdom';
 import { getXPath } from './lib/xpath';
-import { getAttributes } from './lib/attributes'; 
+import { getAttributes } from './lib/attributes';
 import type { IAttributes } from './lib/attributes';
+import { getCSSStyleSheet } from './lib/stylesheets';
+import type { IStyleSheet } from './lib/stylesheets';
 
 type INode = {
     type: number;
@@ -12,7 +14,8 @@ type INode = {
     xpath: string;
     parentXPath?: string;
     data?: string;
-}
+    sheet?: IStyleSheet;
+};
 
 type IMutationRecord = {
     type: 'attributes' | 'characterData' | 'childList';
@@ -24,7 +27,7 @@ type IMutationRecord = {
     attributeName: string | null;
     attributeNamespace: string | null;
     oldValue?: string | null;
-}
+};
 
 export default class MutationObserverDiff {
     private dom: JSDOM;
@@ -58,6 +61,10 @@ export default class MutationObserverDiff {
                 attributes: getAttributes(node),
                 xpath: getXPath(node),
                 data: node.data,
+            }
+
+            if (node.tagName.toLowerCase() === 'style') {
+                info.sheet = getCSSStyleSheet(node);
             }
 
             if (!xpath) {
