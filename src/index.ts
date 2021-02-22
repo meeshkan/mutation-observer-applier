@@ -61,7 +61,7 @@ export default class MutationObserverDiff {
                 data: node.data,
             }
 
-            if (node.tagName.toLowerCase() === 'style') {
+            if (node.tagName && node.tagName.toLowerCase() === 'style') {
                 info.sheet = getCSSStyleSheet(node);
             }
 
