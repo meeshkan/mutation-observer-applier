@@ -173,19 +173,19 @@ export default class MutationObserverDiff {
                     }
 
                     targetInDom = this.getElementByXPath(targetXPath);
-                    const targetAttributes = target?.attributes;
+                    const targetAttributes = target.attributes;
                     if (!targetAttributes) {
                         return;
                     }
 
                     const mutatedAttributeName = mutation.attributeName as string;
                     if (mutatedAttributeName) {
-                        const mutatedAttributeValue = targetAttributes[mutatedAttributeName];
-                        if (!mutatedAttributeValue) {
-                           targetInDom.removeAttribute(mutatedAttributeName);
-                           return;
+                        if (!Object.keys(targetAttributes).includes(mutatedAttributeName)) {
+                            targetInDom.removeAttribute(mutatedAttributeName);
+                            return;
                         }
 
+                        const mutatedAttributeValue = targetAttributes[mutatedAttributeName];
                         targetInDom.setAttribute(mutatedAttributeName, mutatedAttributeValue);
                     }
 
