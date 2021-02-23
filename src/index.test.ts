@@ -1,236 +1,150 @@
 import MutationObserverDiff from './index';
-
-const fixtures = {
-  attributes: {
-    add: {
-      initialDom: '<html><head><title>Cool Website</title></head><body><h1>Welcome to the coolest website!</h1><p>Well, it\'s actually nothing more than another test website...</p></body></html>',
-      mutations: [{
-        type: 'attributes',
-        target: {
-          type: 1,
-          value: null,
-          outerHTML: '<p style="color:red">Well, it\'s actually nothing more than another test website...</p>',
-          attributes: {
-            style: 'color:red;'
-          },
-          xpath: '/html/body/p'
-        },
-        addedNodes: [],
-        removedNodes: [],
-        previousSibling: null,
-        nextSibling: null,
-        attributeName: 'style',
-        attributeNamespace: null
-      }],
-      finalDom: '<html><head><title>Cool Website</title></head><body><h1>Welcome to the coolest website!</h1><p style="color:red;">Well, it\'s actually nothing more than another test website...</p></body></html>',
-    },
-    edit: {
-      initialDom: '<html><head><title>Cool Website</title></head><body><h1>Welcome to the coolest website!</h1><p style="color:red;">Well, it\'s actually nothing more than another test website...</p></body></html>',
-      mutations: [{
-        type: 'attributes',
-        target: {
-          type: 1,
-          value: null,
-          outerHTML: '<p style="color:red">Well, it\'s actually nothing more than another test website...</p>',
-          attributes: {
-            style: 'color:green;'
-          },
-          xpath: '/html/body/p'
-        },
-        addedNodes: [],
-        removedNodes: [],
-        previousSibling: null,
-        nextSibling: null,
-        attributeName: 'style',
-        attributeNamespace: null
-      }],
-      finalDom: '<html><head><title>Cool Website</title></head><body><h1>Welcome to the coolest website!</h1><p style="color:green;">Well, it\'s actually nothing more than another test website...</p></body></html>',
-    },
-    remove: {
-      initialDom: '<html><head><title>Cool Website</title></head><body><h1>Welcome to the coolest website!</h1><p style="color:red;">Well, it\'s actually nothing more than another test website...</p></body></html>',
-      mutations: [{
-        type: 'attributes',
-        target: {
-          type: 1,
-          value: null,
-          outerHTML: '<p>Well, it\'s actually nothing more than another test website...</p>',
-          attributes: {},
-          xpath: '/html/body/p'
-        },
-        addedNodes: [],
-        removedNodes: [],
-        previousSibling: null,
-        nextSibling: null,
-        attributeName: 'style',
-        attributeNamespace: null
-      }],
-      finalDom: '<html><head><title>Cool Website</title></head><body><h1>Welcome to the coolest website!</h1><p>Well, it\'s actually nothing more than another test website...</p></body></html>',
-    },
-  },
-  characterData: {
-    add: {
-      initialDom: '<html><head><title>Cool Website</title></head><body><h1>Welcome to the coolest website!</h1><p>Well, it\'s actually nothing more than another test website...</p></body></html>',
-      mutations: [{
-        type: 'characterData',
-        target: {
-          type: 3,
-          value: 'Well, it\'s actually nothing more than another test website... Don\'t act so surprised!',
-          attributes: {},
-          xpath: '',
-          parentXPath: '/html/body/p',
-          data: 'Well, it\'s actually nothing more than another test website... Don\'t act so surprised!'
-        },
-        addedNodes: [],
-        removedNodes: [],
-        previousSibling: null,
-        nextSibling: null,
-        attributeName: null,
-        attributeNamespace: null
-      }],
-      finalDom: '<html><head><title>Cool Website</title></head><body><h1>Welcome to the coolest website!</h1><p>Well, it\'s actually nothing more than another test website... Don\'t act so surprised!</p></body></html>',
-    },
-    remove: {
-      initialDom: '<html><head><title>Cool Website</title></head><body><h1>Welcome to the coolest website!</h1><p>Well, it\'s actually nothing more than another test website...</p></body></html>',
-      mutations: [{
-        type: 'characterData',
-        target: {
-          type: 3,
-          value: 'Well, it\'s nothing more than another test website.',
-          attributes: {},
-          xpath: '',
-          parentXPath: '/html/body/p',
-          data: 'Well, it\'s nothing more than another test website.'
-        },
-        addedNodes: [],
-        removedNodes: [],
-        previousSibling: null,
-        nextSibling: null,
-        attributeName: null,
-        attributeNamespace: null
-      }],
-      finalDom: '<html><head><title>Cool Website</title></head><body><h1>Welcome to the coolest website!</h1><p>Well, it\'s nothing more than another test website.</p></body></html>',
-    },
-  },
-  childList: {
-    add: {
-      initialDom: '<html><head><title>Cool Website</title></head><body><h1>Shopping List</h1><ul><li>Coffee</li><li>Tea</li><li>Milk</li></ul></body></html>',
-      mutations: [{
-        type: 'childList',
-        target: {
-          type: 1,
-          name: 'UL',
-          tagName: 'UL',
-          value: null,
-          outerHTML: '<ul><li>Coffee</li><li>Tea</li><li>Milk</li><li>Chocolate</li></ul>',
-          innerHTML: '<li>Coffee</li><li>Tea</li><li>Milk</li><li>Chocolate</li>',
-          attributes: {},
-          xpath: '/html/body/ul'
-        },
-        addedNodes: [{
-          type: 1,
-          name: 'LI',
-          tagName: 'LI',
-          value: null,
-          outerHTML: '<li>Chocolate</li>',
-          innerHTML: 'Chocolate',
-          attributes: {},
-          xpath: '/html/body/ul/li[4]'
-        }],
-        removedNodes: [],
-        previousSibling: {
-          type: 1,
-          name: 'LI',
-          tagName: 'LI',
-          value: null,
-          outerHTML: '<li>Milk</li>',
-          innerHTML: 'Milk',
-          attributes: {},
-          xpath: '/html/body/ul/li[3]'
-        },
-        nextSibling: null,
-        attributeName: null,
-        attributeNamespace: null
-      }],
-      finalDom: '<html><head><title>Cool Website</title></head><body><h1>Shopping List</h1><ul><li>Coffee</li><li>Tea</li><li>Milk</li><li>Chocolate</li></ul></body></html>',
-    },
-    remove: {
-      initialDom: '<html><head><title>Cool Website</title></head><body><h1>Shopping List</h1><ul><li>Coffee</li><li>Tea</li><li>Milk</li></ul></body></html>',
-      mutations: [{
-        type: 'childList',
-        target: {
-          type: 1,
-          value: null,
-          outerHTML: '<ul><li>Coffee</li><li>Tea</li></ul>',
-          attributes: {},
-          xpath: '/html/body/ul',
-        },
-        addedNodes: [],
-        removedNodes: [{
-          type: 1,
-          value: null,
-          outerHTML: '<li>Milk</li>',
-          attributes: {},
-          xpath: '/li',
-        }],
-        previousSibling: {
-          type: 1,
-          value: null,
-          outerHTML: '<li>Tea</li>',
-          attributes: {},
-          xpath: '/html/body/ul/li[2]',
-        },
-        nextSibling: null,
-        attributeName: null,
-        attributeNamespace: null,
-      }],
-      finalDom: '<html><head><title>Cool Website</title></head><body><h1>Shopping List</h1><ul><li>Coffee</li><li>Tea</li></ul></body></html>',
-    },
-  },
-};
+import { JSDOM } from 'jsdom';
 
 describe('applyMutations()', () => {
   it('adds attributes', () => {
-    const mod = new MutationObserverDiff(fixtures.attributes.add.initialDom);
-    expect(mod.DOM).toBe(fixtures.attributes.add.initialDom);
-    mod.applyMutations(fixtures.attributes.add.mutations);
-    expect(mod.DOM).toBe(fixtures.attributes.add.finalDom);
+    const initialDom = '<!doctype html><html><body><p>Hello world!</p></body></html>';
+    const dom = new JSDOM(initialDom);
+    const { window: { document } } = dom;
+    const mod = new MutationObserverDiff(dom.serialize());
+    const targetNode = document.querySelector('p');
+
+    const mutations = [{
+      type: 'attributes',
+      target: targetNode,
+      addedNodes: [],
+      removedNodes: [],
+      previousSibling: null,
+      nextSibling: null,
+      attributeName: 'style',
+      attributeNamespace: null,
+    }];
+
+    const serializedMutations = mod.serializeMutations(mutations);
+    mod.applyMutations(serializedMutations);
+    expect(mod.DOM).toBe(dom.serialize());
   });
   it('edits attributes', () => {
-    const mod = new MutationObserverDiff(fixtures.attributes.edit.initialDom);
-    expect(mod.DOM).toBe(fixtures.attributes.edit.initialDom);
-    mod.applyMutations(fixtures.attributes.edit.mutations);
-    expect(mod.DOM).toBe(fixtures.attributes.edit.finalDom);
+    const initialDom = '<!doctype html><html><body><p>Hello world!</p></body></html>';
+    const dom = new JSDOM(initialDom);
+    const { window: { document } } = dom;
+    const targetNode = document.querySelector('p');
+    targetNode.setAttribute('style', 'color: red;');
+    const mod = new MutationObserverDiff(dom.serialize());
+    targetNode.setAttribute('style', 'color: green;');
+
+    const mutations = [{
+      type: 'attributes',
+      target: targetNode,
+      addedNodes: [],
+      removedNodes: [],
+      previousSibling: null,
+      nextSibling: null,
+      attributeName: 'style',
+      attributeNamespace: null,
+    }];
+
+    const serializedMutations = mod.serializeMutations(mutations);
+    mod.applyMutations(serializedMutations);
+    expect(mod.DOM).toBe(dom.serialize());
   });
   it('removes attributes', () => {
-    const mod = new MutationObserverDiff(fixtures.attributes.remove.initialDom);
-    expect(mod.DOM).toBe(fixtures.attributes.remove.initialDom);
-    mod.applyMutations(fixtures.attributes.remove.mutations);
-    expect(mod.DOM).toBe(fixtures.attributes.remove.finalDom);
+    const initialDom = '<!doctype html><html><body><p>Hello world!</p></body></html>';
+    const dom = new JSDOM(initialDom);
+    const { window: { document } } = dom;
+    const targetNode = document.querySelector('p');
+    targetNode.setAttribute('style', 'color: red;');
+    const mod = new MutationObserverDiff(dom.serialize());
+    targetNode.removeAttribute('style');
+
+    const mutations = [{
+      type: 'attributes',
+      target: targetNode,
+      addedNodes: [],
+      removedNodes: [],
+      previousSibling: null,
+      nextSibling: null,
+      attributeName: 'style',
+      attributeNamespace: null,
+    }];
+
+    const serializedMutations = mod.serializeMutations(mutations);
+    mod.applyMutations(serializedMutations);
+    expect(mod.DOM).toBe(dom.serialize());
   });
 
-  it('adds character data', () => {
-    const mod = new MutationObserverDiff(fixtures.characterData.add.initialDom);
-    expect(mod.DOM).toBe(fixtures.characterData.add.initialDom);
-    mod.applyMutations(fixtures.characterData.add.mutations);
-    expect(mod.DOM).toBe(fixtures.characterData.add.finalDom);
-  });
-  it('removes character data', () => {
-    const mod = new MutationObserverDiff(fixtures.characterData.remove.initialDom);
-    expect(mod.DOM).toBe(fixtures.characterData.remove.initialDom);
-    mod.applyMutations(fixtures.characterData.remove.mutations);
-    expect(mod.DOM).toBe(fixtures.characterData.remove.finalDom);
-  });
+  it('modifies character data', () => {
+    const initialDom = '<!doctype html><html><body><h1>Welcome to the coolest website!</h1><p>Well, it\'s actually nothing more than another test website...</p>'
+    const dom = new JSDOM(initialDom);
+    const { window: { document } } = dom;
+    const targetNode = document.querySelector('p');
+    const mod = new MutationObserverDiff(dom.serialize());
+    targetNode.innerText = 'Well, it\'s actually nothing more than another test website... Don\'t act so surprised!'
 
+    const mutations = [{
+      type: 'characterData',
+      target: targetNode.firstChild,
+      addedNodes: [],
+      removedNodes: [],
+      previousSibling: null,
+      nextSibling: null,
+      attributeName: null,
+      attributeNamespace: null,
+    }];
+
+    const serializedMutations = mod.serializeMutations(mutations);
+    mod.applyMutations(serializedMutations);
+    expect(mod.DOM).toBe(dom.serialize());
+  });
   it('adds elements to the DOM tree', () => {
-    const mod = new MutationObserverDiff(fixtures.childList.add.initialDom);
-    expect(mod.DOM).toBe(fixtures.childList.add.initialDom);
-    mod.applyMutations(fixtures.childList.add.mutations);
-    expect(mod.DOM).toBe(fixtures.childList.add.finalDom);
+    const initialDom = '<!doctype html><html><head><title>Cool Website</title></head><body><h1>Shopping List</h1><ul><li>Coffee</li><li>Tea</li><li>Milk</li></ul></body></html>';
+    const dom = new JSDOM(initialDom);
+    const { window: { document } } = dom;
+    const targetNode = document.querySelector('ul');
+    const mod = new MutationObserverDiff(dom.serialize());
+    const addedNode = document.createElement('li');
+    addedNode.appendChild(document.createTextNode('Chocolate'));
+    targetNode.appendChild(addedNode);
+
+    const mutations = [{
+      type: 'childList',
+      target: targetNode,
+      addedNodes: [addedNode],
+      removedNodes: [],
+      previousSibling: addedNode.previousSibling,
+      nextSibling: null,
+      attributeName: null,
+      attributeNamespace: null,
+    }];
+
+    const serializedMutations = mod.serializeMutations(mutations);
+    mod.applyMutations(serializedMutations);
+    expect(mod.DOM).toBe(dom.serialize());
   });
   it('removes elements from the DOM tree', () => {
-    const mod = new MutationObserverDiff(fixtures.childList.remove.initialDom);
-    expect(mod.DOM).toBe(fixtures.childList.remove.initialDom);
-    mod.applyMutations(fixtures.childList.remove.mutations);
-    expect(mod.DOM).toBe(fixtures.childList.remove.finalDom);
+    const initialDom = '<!doctype html><html><head><title>Cool Website</title></head><body><h1>Shopping List</h1><ul><li>Coffee</li><li>Tea</li><li>Milk</li></ul></body></html>';
+    const dom = new JSDOM(initialDom);
+    const { window: { document } } = dom;
+    const targetNode = document.querySelector('ul');
+    const mod = new MutationObserverDiff(dom.serialize());
+    const removedNode = targetNode.childNodes[1];
+    const previousSibling = removedNode.previousSibling;
+    const nextSibling = removedNode.nextSibling;
+    targetNode.removeChild(removedNode);
+
+    const mutations = [{
+      type: 'childList',
+      target: targetNode,
+      addedNodes: [],
+      removedNodes: [removedNode],
+      previousSibling,
+      nextSibling,
+      attributeName: null,
+      attributeNamespace: null,
+    }];
+
+    const serializedMutations = mod.serializeMutations(mutations);
+    mod.applyMutations(serializedMutations);
+    expect(mod.DOM).toBe(dom.serialize());
   });
 });
