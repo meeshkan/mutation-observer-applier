@@ -68,7 +68,8 @@ export default class MutationObserverDiff {
             if (!xpath) {
                 return {
                     ...info,
-                    parentXPath: getXPath(node.parentNode)
+                    parentXPath: getXPath(node.parentNode),
+                    parentChildIndex: Array.from(node.parentNode?.childNodes || []).indexOf(node),
                 };
             }
 
@@ -118,36 +119,52 @@ export default class MutationObserverDiff {
 
                     targetInDom = this.getElementByXPath(targetXPath);
                     let previousSiblingInDom, nextSiblingInDom;
-                    if (mutation.previousSibling && mutation.previousSibling.xpath) {
-                        previousSiblingInDom = this.getElementByXPath(mutation.previousSibling.xpath);
+                    if (mutation.previousSibling) {
+                        if (mutation.previousSibling.xpath) {
+                            previousSiblingInDom = this.getElementByXPath(mutation.previousSibling.xpath);
+                        } else if (mutation.previousSibling.parentXPath) {
+                            previousSiblingInDom = this.getElementByXPath(mutation.previousSibling.parentXPath).childNodes[mutation.previousSibling.parentChildIndex];
+                        }
                     }
 
-                    if (mutation.nextSibling && mutation.nextSibling.xpath) {
-                        nextSiblingInDom = this.getElementByXPath(mutation.nextSibling.xpath);
-                    }
-
-                    if (!previousSiblingInDom && !nextSiblingInDom) {
-                        return;
+                    if (mutation.nextSibling) {
+                        if (mutation.nextSibling.xpath) {
+                            nextSiblingInDom = this.getElementByXPath(mutation.nextSibling.xpath);
+                        } else if (mutation.nextSibling.parentXPath) {
+                            nextSiblingInDom = this.getElementByXPath(mutation.nextSibling.parentXPath).childNodes[mutation.nextSibling.parentChildIndex];
+                        }
                     }
 
                     mutation.addedNodes.forEach((addedNode) => {
                         const document = this.dom.window.document;
                         const newElementInDom = document.createElement(addedNode.tagName);
+                        Object.keys(addedNode.attributes).forEach((attributeName) => {
+                            newElementInDom.setAttribute(
+                                attributeName,
+                                addedNode.attributes[attributeName]
+                            );
+                        });
+
                         newElementInDom.innerHTML = addedNode.innerHTML;
                         if (previousSiblingInDom) {
                             targetInDom.insertBefore(newElementInDom, previousSiblingInDom.nextSibling);
-                        } else {
+                        } else if (nextSiblingInDom) {
                             targetInDom.insertBefore(newElementInDom, nextSiblingInDom);
+                        } else {
+                            targetInDom.appendChild(newElementInDom);
                         }
                     });
 
                     mutation.removedNodes.forEach((removedNode) => {
                         if (previousSiblingInDom) {
                             targetInDom.removeChild(previousSiblingInDom.nextSibling);
-                        } else {
+                        } else if (nextSiblingInDom) {
                             targetInDom.removeChild(nextSiblingInDom.previousSibling);
+                        } else {
+                            targetInDom.removeChild(targetInDom.firstChild);
                         }
                     });
+
                     break;
                 case 'attributes':
                     targetXPath = target.xpath;
