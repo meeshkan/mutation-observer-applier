@@ -30,17 +30,27 @@ type IMutationRecord = {
 
 export default class MutationObserverDiff {
     private dom: JSDOM;
+    private sheets: IStyleSheet[];
 
-    constructor(initialDom: string) {
+    constructor(initialDom: string, styleSheets?: IStyleSheet[]) {
         this.dom = new JSDOM(initialDom);
+        this.sheets = styleSheets || [];
     }
 
     get DOM(): string {
         return this.dom.serialize();
     }
 
-    set DOM(currentDom: string) {
+    set DOM(currentDom: string): void {
         this.dom = new JSDOM(currentDom);
+    }
+
+    get styleSheets(): IStyleSheet[] {
+        return this.sheets;
+    }
+
+    set styleSheets(styleSheets: IStyleSheet[]): void {
+        this.sheets = styleSheets;
     }
 
     serializeMutations(mutations: MutationRecord[]): IMutationRecord[] {
