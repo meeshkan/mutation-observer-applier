@@ -7,7 +7,7 @@ export type IStyleSheet = {
 };
 
 export const getCSSStyleSheet = (node: HTMLStyleElement): IStyleSheet => {
-    const sheet = node.sheet;
+    const sheet = node.sheet || node.styleSheet;
     if (!sheet) {
         return {};
     }
