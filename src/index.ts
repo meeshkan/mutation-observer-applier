@@ -53,6 +53,16 @@ export default class MutationObserverDiff {
         this.sheets = styleSheets;
     }
 
+    serializeStyleSheets(styleSheets: StyleSheetList): IStyleSheet[] {
+        return Array.from(styleSheets).map((sheet) => {
+            return Array.from(sheet.cssRules).map((cssRule) => {
+                return {
+                    cssText: cssRule.cssText,
+                }
+            });
+        });
+    }
+
     serializeMutations(mutations: MutationRecord[]): IMutationRecord[] {
         const nodeInfo = (node: any): INode | null => {
             if (!node) {
