@@ -157,7 +157,17 @@ export default class MutationObserverDiff {
 
                     mutation.addedNodes.forEach((addedNode) => {
                         const document = this.dom.window.document;
-                        const newElementInDom = document.createElement(addedNode.tagName);
+                        let newElementInDom;
+                        if (addedNode.tagName) {
+                            newElementInDom = document.createElement(addedNode.tagName);
+                        } else if (addedNode.name === '#text') {
+                            newElementInDom = document.createTextNode(addedNode.value); 
+                        } else if (addedNode.name === '#comment') {
+                            newElementInDom = document.createComment(addedNode.value);
+                        } else {
+                            return;
+                        }
+
                         Object.keys(addedNode.attributes).forEach((attributeName) => {
                             newElementInDom.setAttribute(
                                 attributeName,
