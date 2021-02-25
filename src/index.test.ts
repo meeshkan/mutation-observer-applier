@@ -8,6 +8,7 @@ describe('applyMutations()', () => {
     const { window: { document } } = dom;
     const mod = new MutationObserverDiff(dom.serialize());
     const targetNode = document.querySelector('p');
+    targetNode.setAttribute('style', 'color: red;');
 
     const mutations = [{
       type: 'attributes',
