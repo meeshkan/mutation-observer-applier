@@ -36,12 +36,11 @@ export const getXPath = (element: Node): string => {
         if ([Node.TEXT_NODE, Node.COMMENT_NODE].includes(element.nodeType)) {
             part = element.nodeName.slice(1) + '()';
         } else {
-            let prefix = element.prefix ? element.prefix + ':' : '';
             let nth = numberOfPreviousSiblings || hasNextSiblings
                 ? '[' + (numberOfPreviousSiblings + 1) + ']'
                 : '';
             
-            part = prefix + element.localName + nth;
+            part = element.localName + nth;
         }
 
         parts.push(part);
