@@ -5,7 +5,8 @@
   "main": "src/index.js",
   "scripts": {
     "build": "tsc",
-    "test": "jest"
+    "test": "jest",
+    "lint": "eslint . --ext .js,.jsx,.ts,.tsx"
   },
   "author": "Meeshkan",
   "license": "MIT",
@@ -19,7 +20,11 @@
     "@types/jest": "^26.0.20",
     "@types/jsdom": "^16.2.6",
     "@types/node": "^14.14.28",
+    "@typescript-eslint/eslint-plugin": "^4.15.2",
+    "@typescript-eslint/parser": "^4.15.2",
     "babel-jest": "^26.6.3",
+    "eslint": "^7.21.0",
+    "eslint-plugin-jest": "^24.1.5",
     "jest": "^26.6.3",
     "ts-node": "^9.1.1",
     "typescript": "^4.1.5"
