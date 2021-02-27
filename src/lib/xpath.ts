@@ -5,7 +5,7 @@ const validNodeTypes = [
 ];
 
 // Source (modified): https://github.com/thiagodp/get-xpath/blob/master/src/index.ts
-export const getXPath = (element: Node): string => {
+export const getXPath = (element: Node | null): string => {
     let parts: string[] = [];
     while (element && validNodeTypes.includes(element.nodeType)) {
         let numberOfPreviousSiblings = 0;
@@ -40,7 +40,7 @@ export const getXPath = (element: Node): string => {
                 ? '[' + (numberOfPreviousSiblings + 1) + ']'
                 : '';
             
-            part = element.localName + nth;
+            part = (element as HTMLElement).localName + nth;
         }
 
         parts.push(part);
