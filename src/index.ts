@@ -118,16 +118,18 @@ export default class MutationObserverDiff {
                 return;
             }
 
-            let targetInDom, targetXPath;
+            const targetXPath = target.xpath;
+            if (!targetXPath) {
+                return;
+            }
+
+            const targetInDom = this.getElementByXPath(targetXPath);
+            if (!targetInDom) {
+                return;
+            }
 
             switch (mutation.type) {
                 case 'childList':
-                    targetXPath = target.xpath;
-                    if (!targetXPath) {
-                        return;
-                    }
-
-                    targetInDom = this.getElementByXPath(targetXPath);
                     let previousSiblingInDom, nextSiblingInDom;
                     if (mutation.previousSibling) {
                         if (mutation.previousSibling.xpath) {
@@ -183,33 +185,27 @@ export default class MutationObserverDiff {
 
                     break;
                 case 'attributes':
-                    targetXPath = target.xpath;
-                    if (!targetXPath) {
-                        return;
-                    }
-
-                    targetInDom = this.getElementByXPath(targetXPath);
                     const targetAttributes = target.attributes;
                     if (!targetAttributes) {
                         return;
                     }
 
                     const mutatedAttributeName = mutation.attributeName as string;
-                    if (mutatedAttributeName) {
-                        if (!Object.keys(targetAttributes).includes(mutatedAttributeName)) {
-                            targetInDom.removeAttribute(mutatedAttributeName);
-                            return;
-                        }
-
-                        const mutatedAttributeValue = targetAttributes[mutatedAttributeName];
-                        targetInDom.setAttribute(mutatedAttributeName, mutatedAttributeValue);
+                    if (!mutatedAttributeName) {
+                        return;
                     }
+
+                    if (!Object.keys(targetAttributes).includes(mutatedAttributeName)) {
+                        targetInDom.removeAttribute(mutatedAttributeName);
+                        return;
+                    }
+
+                    const mutatedAttributeValue = targetAttributes[mutatedAttributeName];
+                    targetInDom.setAttribute(mutatedAttributeName, mutatedAttributeValue);
 
                     break;
                 case 'characterData':
-                    const targetData = target.data;
-                    targetInDom = this.getElementByXPath(targetXPath);
-                    targetInDom.replaceData(0, targetInDom.length, targetData);
+                    targetInDom.replaceData(0, targetInDom.length, target.data);
                     break;
             }
         });
