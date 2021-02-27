@@ -33,7 +33,15 @@ type IMutationRecord = {
 type IMutationApplier = (mutation: IMutationRecord) => void;
 type IMutationAppliersByType = Record<IMutationType, IMutationApplier>;
 
-export default class MutationObserverDiff {
+export interface IMutationObserverDiff {
+    DOM: string;
+    styleSheets: IStyleSheet[];
+    serializeStyleSheets(styleSheets: StyleSheetList): IStyleSheet[];
+    serializeMutations(mutations: MutationRecord[]): IMutationRecord[];
+    applyMutations(serializedMutations: IMutationRecord[]): void;
+}
+
+export default class MutationObserverDiff implements IMutationObserverDiff {
     private dom: JSDOM;
     private sheets: IStyleSheet[];
     private appliersByMutationType: IMutationAppliersByType = {
@@ -236,12 +244,12 @@ export default class MutationObserverDiff {
         targetInDom.replaceData(0, targetInDom.data.length, mutation.target?.data || '');
     }
 
-    private applyMutation(mutation: IMutationRecord) {
+    private applyMutation(mutation: IMutationRecord): void {
         const applier = this.appliersByMutationType[mutation.type].bind(this);
         applier(mutation);
     }
 
-    applyMutations(serializedMutations: IMutationRecord[]) {
+    applyMutations(serializedMutations: IMutationRecord[]): void {
         serializedMutations.forEach(this.applyMutation.bind(this));
     }
 }
