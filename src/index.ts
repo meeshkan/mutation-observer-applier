@@ -11,7 +11,6 @@ type INode = {
     innerHTML: string | null;
     attributes: IAttributes;
     xpath: string;
-    parentXPath?: string;
     data?: string;
     sheet?: IStyleSheet;
 };
@@ -69,7 +68,6 @@ export default class MutationObserverDiff {
                 return null;
             }
 
-            const xpath = getXPath(node);
             const info = {
                 type: node.nodeType,
                 name: node.nodeName,
@@ -83,14 +81,6 @@ export default class MutationObserverDiff {
 
             if (node.tagName && node.tagName.toLowerCase() === 'style') {
                 info.sheet = getCSSStyleSheet(node);
-            }
-
-            if (!xpath) {
-                return {
-                    ...info,
-                    parentXPath: getXPath(node.parentNode),
-                    parentChildIndex: Array.from(node.parentNode?.childNodes || []).indexOf(node),
-                };
             }
 
             return info;
@@ -142,16 +132,12 @@ export default class MutationObserverDiff {
                     if (mutation.previousSibling) {
                         if (mutation.previousSibling.xpath) {
                             previousSiblingInDom = this.getElementByXPath(mutation.previousSibling.xpath);
-                        } else if (mutation.previousSibling.parentXPath) {
-                            previousSiblingInDom = this.getElementByXPath(mutation.previousSibling.parentXPath).childNodes[mutation.previousSibling.parentChildIndex];
                         }
                     }
 
                     if (mutation.nextSibling) {
                         if (mutation.nextSibling.xpath) {
                             nextSiblingInDom = this.getElementByXPath(mutation.nextSibling.xpath);
-                        } else if (mutation.nextSibling.parentXPath) {
-                            nextSiblingInDom = this.getElementByXPath(mutation.nextSibling.parentXPath).childNodes[mutation.nextSibling.parentChildIndex];
                         }
                     }
 
@@ -222,13 +208,7 @@ export default class MutationObserverDiff {
                     break;
                 case 'characterData':
                     const targetData = target.data;
-                    const targetParentXPath = target.parentXPath;
-                    if (!targetParentXPath) {
-                        return;
-                    }
-
-                    const targetParentInDom = this.getElementByXPath(targetParentXPath);
-                    targetInDom = targetParentInDom.firstChild as characterData;
+                    targetInDom = this.getElementByXPath(targetXPath);
                     targetInDom.replaceData(0, targetInDom.length, targetData);
                     break;
             }
