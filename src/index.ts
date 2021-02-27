@@ -7,16 +7,19 @@ import type { IStyleSheet } from './lib/stylesheets';
 
 type INode = {
     type: number;
+    name: string | null;
     value: string | null;
     innerHTML: string | null;
     attributes: IAttributes;
     xpath: string;
+    tagName?: string;
     data?: string;
-    sheet?: IStyleSheet;
+    sheet?: IStyleSheet | {};
 };
 
+type IMutationType = 'attributes' | 'characterData' | 'childList';
 type IMutationRecord = {
-    type: 'attributes' | 'characterData' | 'childList';
+    type: IMutationType; 
     target: INode | null;
     addedNodes: (INode | null)[];
     removedNodes: (INode | null)[];
@@ -27,9 +30,17 @@ type IMutationRecord = {
     oldValue?: string | null;
 };
 
+type IMutationApplier = (mutation: IMutationRecord) => void;
+type IMutationAppliersByType = Record<IMutationType, IMutationApplier>;
+
 export default class MutationObserverDiff {
     private dom: JSDOM;
     private sheets: IStyleSheet[];
+    private appliersByMutationType: IMutationAppliersByType = {
+        childList: this.applyChildListMutation,
+        attributes: this.applyAttributesMutation,
+        characterData: this.applyCharacterDataMutation,
+    };
 
     constructor(initialDom: string, styleSheets?: IStyleSheet[]) {
         this.dom = new JSDOM(initialDom);
@@ -40,7 +51,7 @@ export default class MutationObserverDiff {
         return this.dom.serialize();
     }
 
-    set DOM(currentDom: string): void {
+    set DOM(currentDom: string) {
         this.dom = new JSDOM(currentDom);
     }
 
@@ -48,17 +59,19 @@ export default class MutationObserverDiff {
         return this.sheets;
     }
 
-    set styleSheets(styleSheets: IStyleSheet[]): void {
+    set styleSheets(styleSheets: IStyleSheet[]) {
         this.sheets = styleSheets;
     }
 
     serializeStyleSheets(styleSheets: StyleSheetList): IStyleSheet[] {
         return Array.from(styleSheets).map((sheet) => {
-            return Array.from(sheet.cssRules).map((cssRule) => {
-                return {
-                    cssText: cssRule.cssText,
-                }
-            });
+            return {
+                cssRules: Array.from(sheet.cssRules).map((cssRule) => {
+                    return {
+                        cssText: cssRule.cssText,
+                    }
+                })
+            };
         });
     }
 
@@ -68,7 +81,7 @@ export default class MutationObserverDiff {
                 return null;
             }
 
-            const info = {
+            const info: INode = {
                 type: node.nodeType,
                 name: node.nodeName,
                 tagName: node.tagName,
@@ -100,7 +113,7 @@ export default class MutationObserverDiff {
         });
     };
 
-    private getElementByXPath(xpath: string): HTMLElement {
+    private getNodeByXPath(xpath: string): (Node | null) {
         const document = this.dom.window.document;
         return document.evaluate(
             xpath,
@@ -108,106 +121,127 @@ export default class MutationObserverDiff {
             null,
             XPathResult.FIRST_ORDERED_NODE_TYPE,
             null
-        ).singleNodeValue as HTMLElement;
+        ).singleNodeValue;
+    }
+
+    private getTargetInDomFromMutation(mutation: IMutationRecord): (Node | never) {
+        const target = mutation.target;
+        if (!target) {
+            throw new Error('Mutation is missing target element');
+        }
+
+        const targetXPath = target.xpath;
+        if (!target.xpath) {
+            throw new Error('Mutation target is missing an XPath value');
+        }
+
+        const targetInDom = this.getNodeByXPath(targetXPath);
+        if (!targetInDom) {
+            throw new Error('Mutation target could not be found in given initial DOM');
+        }
+
+        return targetInDom;
+    }
+
+    private applyChildListMutation(mutation: IMutationRecord): void {
+        const targetInDom = this.getTargetInDomFromMutation(mutation) as HTMLElement;
+
+        let previousSiblingInDom: HTMLElement | null, nextSiblingInDom: HTMLElement | null;
+        if (mutation.previousSibling) {
+            if (mutation.previousSibling.xpath) {
+                previousSiblingInDom = this.getNodeByXPath(mutation.previousSibling.xpath) as HTMLElement;
+            }
+        }
+
+        if (mutation.nextSibling) {
+            if (mutation.nextSibling.xpath) {
+                nextSiblingInDom = this.getNodeByXPath(mutation.nextSibling.xpath) as HTMLElement;
+            }
+        }
+
+        mutation.addedNodes.forEach((addedNode) => {
+            const document = this.dom.window.document;
+            let newNodeInDom: Node;
+            if (addedNode?.tagName) {
+                newNodeInDom = document.createElement(addedNode.tagName);
+            } else if (addedNode?.name === '#text') {
+                newNodeInDom = document.createTextNode(addedNode?.value || ''); 
+            } else if (addedNode?.name === '#comment') {
+                newNodeInDom = document.createComment(addedNode?.value || '');
+            } else {
+                throw new Error('Could not add node because it is of unrecognizable type');
+            }
+
+            const addedNodeAttributes = addedNode?.attributes;
+            Object.keys(addedNodeAttributes || []).forEach((attributeName) => {
+                if (!Object.keys(addedNodeAttributes).includes(attributeName)) {
+                    return;
+                }
+
+                const attributeValue = addedNodeAttributes[attributeName];
+                (newNodeInDom as HTMLElement).setAttribute(attributeName, attributeValue);
+            });
+
+            (newNodeInDom as HTMLElement).innerHTML = addedNode?.innerHTML || '';
+            if (previousSiblingInDom) {
+                targetInDom.insertBefore(newNodeInDom, previousSiblingInDom.nextSibling);
+            } else if (nextSiblingInDom) {
+                targetInDom.insertBefore(newNodeInDom, nextSiblingInDom);
+            } else {
+                targetInDom.appendChild(newNodeInDom);
+            }
+        });
+
+        mutation.removedNodes.forEach((removedNode) => {
+            let childInDomToRemove;
+            if (previousSiblingInDom) {
+                childInDomToRemove = previousSiblingInDom.nextSibling;
+            } else if (nextSiblingInDom) {
+                childInDomToRemove = nextSiblingInDom.previousSibling;
+            } else {
+                childInDomToRemove = targetInDom.firstChild;
+            }
+
+            if (!childInDomToRemove) {
+                throw new Error('Could not find Node to remove');
+            }
+
+            targetInDom.removeChild(childInDomToRemove);
+        });
+    }
+
+    private applyAttributesMutation(mutation: IMutationRecord): void {
+        const targetInDom = this.getTargetInDomFromMutation(mutation) as HTMLElement;
+        const targetAttributes = mutation.target?.attributes;
+        if (!targetAttributes) {
+            throw new Error('Attributes of mutation target are missing');
+        }
+
+        const mutatedAttributeName = mutation.attributeName as string;
+        if (!mutatedAttributeName) {
+            throw new Error('Mutated attribute name is missing');
+        }
+
+        if (!Object.keys(targetAttributes).includes(mutatedAttributeName)) {
+            targetInDom.removeAttribute(mutatedAttributeName);
+            return;
+        }
+
+        const mutatedAttributeValue = targetAttributes[mutatedAttributeName];
+        targetInDom.setAttribute(mutatedAttributeName, mutatedAttributeValue);
+    }
+
+    private applyCharacterDataMutation(mutation: IMutationRecord): void {
+        const targetInDom = this.getTargetInDomFromMutation(mutation) as CharacterData;
+        targetInDom.replaceData(0, targetInDom.data.length, mutation.target?.data || '');
+    }
+
+    private applyMutation(mutation: IMutationRecord) {
+        const applier = this.appliersByMutationType[mutation.type].bind(this);
+        applier(mutation);
     }
 
     applyMutations(serializedMutations: IMutationRecord[]) {
-        serializedMutations.forEach((mutation: IMutationRecord) => {
-            const target = mutation.target;
-            if (!target) {
-                return;
-            }
-
-            const targetXPath = target.xpath;
-            if (!targetXPath) {
-                return;
-            }
-
-            const targetInDom = this.getElementByXPath(targetXPath);
-            if (!targetInDom) {
-                return;
-            }
-
-            switch (mutation.type) {
-                case 'childList':
-                    let previousSiblingInDom, nextSiblingInDom;
-                    if (mutation.previousSibling) {
-                        if (mutation.previousSibling.xpath) {
-                            previousSiblingInDom = this.getElementByXPath(mutation.previousSibling.xpath);
-                        }
-                    }
-
-                    if (mutation.nextSibling) {
-                        if (mutation.nextSibling.xpath) {
-                            nextSiblingInDom = this.getElementByXPath(mutation.nextSibling.xpath);
-                        }
-                    }
-
-                    mutation.addedNodes.forEach((addedNode) => {
-                        const document = this.dom.window.document;
-                        let newElementInDom;
-                        if (addedNode.tagName) {
-                            newElementInDom = document.createElement(addedNode.tagName);
-                        } else if (addedNode.name === '#text') {
-                            newElementInDom = document.createTextNode(addedNode.value); 
-                        } else if (addedNode.name === '#comment') {
-                            newElementInDom = document.createComment(addedNode.value);
-                        } else {
-                            return;
-                        }
-
-                        Object.keys(addedNode.attributes).forEach((attributeName) => {
-                            newElementInDom.setAttribute(
-                                attributeName,
-                                addedNode.attributes[attributeName]
-                            );
-                        });
-
-                        newElementInDom.innerHTML = addedNode.innerHTML;
-                        if (previousSiblingInDom) {
-                            targetInDom.insertBefore(newElementInDom, previousSiblingInDom.nextSibling);
-                        } else if (nextSiblingInDom) {
-                            targetInDom.insertBefore(newElementInDom, nextSiblingInDom);
-                        } else {
-                            targetInDom.appendChild(newElementInDom);
-                        }
-                    });
-
-                    mutation.removedNodes.forEach((removedNode) => {
-                        if (previousSiblingInDom) {
-                            targetInDom.removeChild(previousSiblingInDom.nextSibling);
-                        } else if (nextSiblingInDom) {
-                            targetInDom.removeChild(nextSiblingInDom.previousSibling);
-                        } else {
-                            targetInDom.removeChild(targetInDom.firstChild);
-                        }
-                    });
-
-                    break;
-                case 'attributes':
-                    const targetAttributes = target.attributes;
-                    if (!targetAttributes) {
-                        return;
-                    }
-
-                    const mutatedAttributeName = mutation.attributeName as string;
-                    if (!mutatedAttributeName) {
-                        return;
-                    }
-
-                    if (!Object.keys(targetAttributes).includes(mutatedAttributeName)) {
-                        targetInDom.removeAttribute(mutatedAttributeName);
-                        return;
-                    }
-
-                    const mutatedAttributeValue = targetAttributes[mutatedAttributeName];
-                    targetInDom.setAttribute(mutatedAttributeName, mutatedAttributeValue);
-
-                    break;
-                case 'characterData':
-                    targetInDom.replaceData(0, targetInDom.length, target.data);
-                    break;
-            }
-        });
+        serializedMutations.forEach(this.applyMutation.bind(this));
     }
 }
