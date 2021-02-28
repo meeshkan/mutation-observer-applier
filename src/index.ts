@@ -9,7 +9,7 @@ type INode = {
     type: number;
     name: string | null;
     value: string | null;
-    innerHTML: string | null;
+    innerHTML?: string | null;
     attributes: IAttributes;
     xpath: string;
     tagName?: string;
@@ -32,6 +32,8 @@ type IMutationRecord = {
 
 type IMutationApplier = (mutation: IMutationRecord) => void;
 type IMutationAppliersByType = Record<IMutationType, IMutationApplier>;
+
+type INodeInfoIncludeKey = 'innerHTML';
 
 export interface IMutationObserverDiff {
     DOM: string;
@@ -84,7 +86,10 @@ export default class MutationObserverDiff implements IMutationObserverDiff {
     }
 
     serializeMutations(mutations: MutationRecord[]): IMutationRecord[] {
-        const nodeInfo = (node: Node | null): INode | null => {
+        const nodeInfo = (
+            node: Node | null,
+            include?: Record<INodeInfoIncludeKey, boolean>
+        ): (INode | null) => {
             if (!node) {
                 return null;
             }
@@ -94,11 +99,14 @@ export default class MutationObserverDiff implements IMutationObserverDiff {
                 name: node.nodeName,
                 tagName: (node as HTMLElement).tagName,
                 value: node.nodeValue,
-                innerHTML: (node as HTMLElement).innerHTML,
                 attributes: getAttributes(node as HTMLElement),
                 xpath: getXPath(node),
                 data: (node as CharacterData).data,
             };
+
+            if (include?.innerHTML) {
+                info.innerHTML = (node as HTMLElement).innerHTML;
+            }
 
             if (info.tagName && info.tagName.toLowerCase() === 'style') {
                 info.sheet = getCSSStyleSheet(node as HTMLStyleElement);
@@ -111,8 +119,10 @@ export default class MutationObserverDiff implements IMutationObserverDiff {
             return {
                 type: mutation.type,
                 target: nodeInfo(mutation.target),
-                addedNodes: Array.from(mutation.addedNodes).map(nodeInfo),
-                removedNodes: Array.from(mutation.removedNodes).map(nodeInfo),
+                addedNodes: Array.from(mutation.addedNodes).map(node => {
+                    return nodeInfo(node, { innerHTML: true });
+                }),
+                removedNodes: Array.from(mutation.removedNodes).map(node => nodeInfo(node)),
                 previousSibling: nodeInfo(mutation.previousSibling),
                 nextSibling: nodeInfo(mutation.nextSibling),
                 attributeName: mutation.attributeName,
