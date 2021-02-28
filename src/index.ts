@@ -35,7 +35,7 @@ type IMutationAppliersByType = Record<IMutationType, IMutationApplier>;
 
 type INodeInfoIncludeKey = 'innerHTML';
 
-export interface IMutationObserverDiff {
+export interface IMutationObserverApplier {
     DOM: string;
     styleSheets: IStyleSheet[];
     serializeStyleSheets(styleSheets: StyleSheetList): IStyleSheet[];
@@ -43,7 +43,7 @@ export interface IMutationObserverDiff {
     applyMutations(serializedMutations: IMutationRecord[]): void;
 }
 
-export default class MutationObserverDiff implements IMutationObserverDiff {
+export default class MutationObserverApplier implements IMutationObserverApplier {
     private dom: JSDOM;
     private sheets: IStyleSheet[];
     private appliersByMutationType: IMutationAppliersByType = {

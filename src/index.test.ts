@@ -1,11 +1,11 @@
 import { JSDOM } from 'jsdom';
-import MutationObserverDiff from './index';
+import MutationObserverApplier from './index';
 
 test('adds attributes', () => {
   const initialDom = '<!doctype html><html><body><p>Hello world!</p></body></html>';
   const dom = new JSDOM(initialDom);
   const { window: { document } } = dom;
-  const mod = new MutationObserverDiff(dom.serialize());
+  const mod = new MutationObserverApplier(dom.serialize());
   const targetNode = document.querySelector('p');
   targetNode.setAttribute('style', 'color: red;');
 
@@ -31,7 +31,7 @@ test('edits attributes', () => {
   const { window: { document } } = dom;
   const targetNode = document.querySelector('p');
   targetNode.setAttribute('style', 'color: red;');
-  const mod = new MutationObserverDiff(dom.serialize());
+  const mod = new MutationObserverApplier(dom.serialize());
   targetNode.setAttribute('style', 'color: green;');
 
   const mutations = [{
@@ -56,7 +56,7 @@ test('removes attributes', () => {
   const { window: { document } } = dom;
   const targetNode = document.querySelector('p');
   targetNode.setAttribute('style', 'color: red;');
-  const mod = new MutationObserverDiff(dom.serialize());
+  const mod = new MutationObserverApplier(dom.serialize());
   targetNode.removeAttribute('style');
 
   const mutations = [{
@@ -80,7 +80,7 @@ test('modifies character data', () => {
   const dom = new JSDOM(initialDom);
   const { window: { document } } = dom;
   const targetNode = document.querySelector('p');
-  const mod = new MutationObserverDiff(dom.serialize());
+  const mod = new MutationObserverApplier(dom.serialize());
   targetNode.firstChild.nodeValue = 'Well, it is actually just another test website... Don\'t act so surprised!';
 
   const mutations = [{
@@ -104,7 +104,7 @@ test('adds elements to the DOM tree', () => {
   const dom = new JSDOM(initialDom);
   const { window: { document } } = dom;
   const targetNode = document.querySelector('ul');
-  const mod = new MutationObserverDiff(dom.serialize());
+  const mod = new MutationObserverApplier(dom.serialize());
   const addedNode = document.createElement('li');
   addedNode.appendChild(document.createTextNode('Chocolate'));
   targetNode.appendChild(addedNode);
@@ -130,7 +130,7 @@ test('removes elements from the DOM tree', () => {
   const dom = new JSDOM(initialDom);
   const { window: { document } } = dom;
   const targetNode = document.querySelector('ul');
-  const mod = new MutationObserverDiff(dom.serialize());
+  const mod = new MutationObserverApplier(dom.serialize());
   const removedNode = targetNode.childNodes[1];
   const previousSibling = removedNode.previousSibling;
   const nextSibling = removedNode.nextSibling;
