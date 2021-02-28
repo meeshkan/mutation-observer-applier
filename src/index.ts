@@ -218,7 +218,7 @@ export default class MutationObserverDiff implements IMutationObserverDiff {
         });
     }
 
-    private applyAttributesMutation(mutation: IMutationRecord): void {
+    private applyAttributesMutation(mutation: IMutationRecord): (void | never) {
         const targetInDom = this.getTargetInDomFromMutation(mutation) as HTMLElement;
         const targetAttributes = mutation.target?.attributes;
         if (!targetAttributes) {
