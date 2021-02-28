@@ -6,7 +6,7 @@ const validNodeTypes = [
 
 // Source (modified): https://github.com/thiagodp/get-xpath/blob/master/src/index.ts
 export const getXPath = (element: Node | null): string => {
-    let parts: string[] = [];
+    const parts: string[] = [];
     while (element && validNodeTypes.includes(element.nodeType)) {
         let numberOfPreviousSiblings = 0;
         let hasNextSiblings = false;
@@ -36,7 +36,7 @@ export const getXPath = (element: Node | null): string => {
         if ([Node.TEXT_NODE, Node.COMMENT_NODE].includes(element.nodeType)) {
             part = element.nodeName.slice(1) + '()';
         } else {
-            let nth = numberOfPreviousSiblings || hasNextSiblings
+            const nth = numberOfPreviousSiblings || hasNextSiblings
                 ? '[' + (numberOfPreviousSiblings + 1) + ']'
                 : '';
             

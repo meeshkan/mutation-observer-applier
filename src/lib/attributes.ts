@@ -1,6 +1,4 @@
-export type IAttributes = {
-    [key: string]: string;
-};
+export type IAttributes = Record<string, string>;
 
 export const getAttributes = (element: any): IAttributes => {
     const attributesObject: IAttributes = {};

@@ -14,7 +14,7 @@ type INode = {
     xpath: string;
     tagName?: string;
     data?: string;
-    sheet?: IStyleSheet | {};
+    sheet?: IStyleSheet | null
 };
 
 type IMutationType = 'attributes' | 'characterData' | 'childList';
@@ -77,8 +77,8 @@ export default class MutationObserverDiff implements IMutationObserverDiff {
                 cssRules: Array.from(sheet.cssRules).map((cssRule) => {
                     return {
                         cssText: cssRule.cssText,
-                    }
-                })
+                    };
+                }),
             };
         });
     }
@@ -98,7 +98,7 @@ export default class MutationObserverDiff implements IMutationObserverDiff {
                 attributes: getAttributes(node),
                 xpath: getXPath(node),
                 data: node.data,
-            }
+            };
 
             if (node.tagName && node.tagName.toLowerCase() === 'style') {
                 info.sheet = getCSSStyleSheet(node);
@@ -119,7 +119,7 @@ export default class MutationObserverDiff implements IMutationObserverDiff {
                 attributeNamespace: mutation.attributeNamespace,
             };
         });
-    };
+    }
 
     private getNodeByXPath(xpath: string): (Node | null) {
         const document = this.dom.window.document;
@@ -200,7 +200,7 @@ export default class MutationObserverDiff implements IMutationObserverDiff {
             }
         });
 
-        mutation.removedNodes.forEach((removedNode) => {
+        mutation.removedNodes.forEach(() => {
             let childInDomToRemove;
             if (previousSiblingInDom) {
                 childInDomToRemove = previousSiblingInDom.nextSibling;

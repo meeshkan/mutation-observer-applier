@@ -6,15 +6,17 @@ export type IStyleSheet = {
     cssRules: ICSSRule[];
 };
 
-export const getCSSStyleSheet = (node: HTMLStyleElement): (IStyleSheet | {}) => {
+export const getCSSStyleSheet = (node: HTMLStyleElement): (IStyleSheet | null) => {
     const sheet = node.sheet as CSSStyleSheet;
     if (!sheet) {
-        return {};
+        return null;
     }
 
-    return Array.from(sheet.cssRules).map((cssRule: CSSRule) => {
-        return {
-            cssText: cssRule.cssText,
-        }
-    });
+    return {
+        cssRules: Array.from(sheet.cssRules).map((cssRule: CSSRule) => {
+            return {
+                cssText: cssRule.cssText,
+            };
+        }),
+    };
 };

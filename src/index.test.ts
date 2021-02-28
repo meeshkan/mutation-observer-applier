@@ -75,12 +75,12 @@ describe('applyMutations()', () => {
   });
 
   it('modifies character data', () => {
-    const initialDom = '<!doctype html><html><body><h1>Welcome to the coolest website!</h1><p>Well, it\'s actually nothing more than another test website...</p>'
+    const initialDom = '<!doctype html><html><body><h1>Welcome to the coolest website!</h1><p>Well, it\'s actually nothing more than another test website...</p>';
     const dom = new JSDOM(initialDom);
     const { window: { document } } = dom;
     const targetNode = document.querySelector('p');
     const mod = new MutationObserverDiff(dom.serialize());
-    targetNode.firstChild.nodeValue = 'Well, it is actually just another test website... Don\'t act so surprised!'
+    targetNode.firstChild.nodeValue = 'Well, it is actually just another test website... Don\'t act so surprised!';
 
     const mutations = [{
       type: 'characterData',
