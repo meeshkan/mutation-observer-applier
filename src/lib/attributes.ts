@@ -1,6 +1,6 @@
 export type IAttributes = Record<string, string>;
 
-export const getAttributes = (element: any): IAttributes => {
+export const getAttributes = (element: HTMLElement): IAttributes => {
     const attributesObject: IAttributes = {};
     if (!element || !element.attributes) {
         return {};
@@ -8,7 +8,7 @@ export const getAttributes = (element: any): IAttributes => {
 
     for (let attribute, i = 0, attributes = element.attributes, n = attributes.length; i < n; i++) {
         attribute = attributes[i];
-        attributesObject[attribute.nodeName] = attribute.nodeValue;
+        attributesObject[attribute.nodeName] = attribute.nodeValue || '';
     }
 
     return attributesObject;

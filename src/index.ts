@@ -84,7 +84,7 @@ export default class MutationObserverDiff implements IMutationObserverDiff {
     }
 
     serializeMutations(mutations: MutationRecord[]): IMutationRecord[] {
-        const nodeInfo = (node: any): INode | null => {
+        const nodeInfo = (node: Node | null): INode | null => {
             if (!node) {
                 return null;
             }
@@ -92,16 +92,16 @@ export default class MutationObserverDiff implements IMutationObserverDiff {
             const info: INode = {
                 type: node.nodeType,
                 name: node.nodeName,
-                tagName: node.tagName,
+                tagName: (node as HTMLElement).tagName,
                 value: node.nodeValue,
-                innerHTML: node.innerHTML,
-                attributes: getAttributes(node),
+                innerHTML: (node as HTMLElement).innerHTML,
+                attributes: getAttributes(node as HTMLElement),
                 xpath: getXPath(node),
-                data: node.data,
+                data: (node as CharacterData).data,
             };
 
-            if (node.tagName && node.tagName.toLowerCase() === 'style') {
-                info.sheet = getCSSStyleSheet(node);
+            if (info.tagName && info.tagName.toLowerCase() === 'style') {
+                info.sheet = getCSSStyleSheet(node as HTMLStyleElement);
             }
 
             return info;
