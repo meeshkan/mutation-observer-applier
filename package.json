@@ -9,7 +9,7 @@
     "coverage": "jest --coverage",
     "lint": "eslint . --ext .js,.jsx,.ts,.tsx"
   },
-  "files": ["dist", "readme.md"],
+  "files": ["build", "readme.md"],
   "author": "Meeshkan",
   "license": "MIT",
   "dependencies": {
