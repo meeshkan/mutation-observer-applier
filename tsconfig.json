@@ -6,5 +6,11 @@
     "outDir": "./build",
     "esModuleInterop": true,
     "strict": true
-  }
+  },
+  "exclude": [
+    "node_modules",
+    "src/*.test.ts",
+    "src/**/*.test.ts",
+    "build"
+  ]
 }
