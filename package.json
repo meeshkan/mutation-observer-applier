@@ -1,5 +1,5 @@
 {
-  "name": "mutation-observer-applier",
+  "name": "@meeshkan/mutation-observer-applier",
   "version": "1.0.0",
   "description": "Apply MutationObserver mutations to a DOM",
   "main": "src/index.js",
