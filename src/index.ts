@@ -214,6 +214,10 @@ export default class MutationObserverApplier implements IMutationObserverApplier
             });
 
             (newNodeInDom as HTMLElement).innerHTML = addedNode?.innerHTML || '';
+            if (addedNode.sheet) {
+                this.sheets.push(addedNode.sheet);
+            }
+
             if (previousSiblingInDom) {
                 targetInDom.insertBefore(newNodeInDom, previousSiblingInDom.nextSibling);
             } else if (nextSiblingInDom) {
