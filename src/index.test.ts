@@ -180,3 +180,33 @@ test('adds stylesheets', () => {
   expect(mod.styleSheets).toStrictEqual([getCSSStyleSheet(styleElement)]);
   expect(mod.DOM).toBe(dom.serialize());
 });
+
+test('removes stylesheets', () => {
+  const initialDom = '<!doctype html><html><body><p>Hello world!</p></body></html>';
+  const dom = new JSDOM(initialDom);
+  const { window: { document } } = dom;
+  const targetNode = document.querySelector('p');
+  const styleElement = document.createElement('style');
+  document.head.appendChild(styleElement);
+  const styleSheet = styleElement.sheet;
+  styleSheet.insertRule('p { color: red; }', 0);
+  const mod = new MutationObserverApplier(dom.serialize());
+  mod.styleSheets = [getCSSStyleSheet(styleElement)];
+
+  const mutations = [{
+    type: 'childList',
+    target: document.head,
+    addedNodes: [],
+    removedNodes: [styleElement],
+    previousSibling: styleElement.previousSibling,
+    nextSibling: styleElement.previousSibling,
+    attributeName: null,
+    attributeNamespace: null,
+  }];
+
+  const serializedMutations = mod.serializeMutations(mutations);
+  mod.applyMutations(serializedMutations);
+  expect(mod.styleSheets).toStrictEqual([]);
+  styleElement.remove();
+  expect(mod.DOM).toBe(dom.serialize());
+});
