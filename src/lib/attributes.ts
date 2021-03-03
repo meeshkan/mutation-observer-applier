@@ -6,10 +6,8 @@ export const getAttributes = (element: HTMLElement): IAttributes => {
         return {};
     }
 
-    for (let attribute, i = 0, attributes = element.attributes, n = attributes.length; i < n; i++) {
-        attribute = attributes[i];
-        attributesObject[attribute.nodeName] = attribute.nodeValue || '';
-    }
-
-    return attributesObject;
+    return Array.from(element.attributes).reduce((accumulator, attribute) => {
+        accumulator[attribute.name] = attribute.value;
+        return accumulator;
+    }, {} as IAttributes);
 };
