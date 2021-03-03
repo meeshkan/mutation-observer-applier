@@ -42,14 +42,14 @@ export const getXPath = (element: Node | null): string => {
             sibling = sibling.nextSibling;
         }
 
+        const nth = numberOfPreviousSiblings || hasNextSiblings
+            ? '[' + (numberOfPreviousSiblings + 1) + ']'
+            : '';
+
         let part: string;
         if ([Node.TEXT_NODE, Node.COMMENT_NODE].includes(element.nodeType)) {
-            part = element.nodeName.slice(1) + '()';
+            part = element.nodeName.slice(1) + '()' + nth;
         } else {
-            const nth = numberOfPreviousSiblings || hasNextSiblings
-                ? '[' + (numberOfPreviousSiblings + 1) + ']'
-                : '';
-            
             part = (element as HTMLElement).localName + nth;
         }
 
