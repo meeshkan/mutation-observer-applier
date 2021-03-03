@@ -241,9 +241,9 @@ export default class MutationObserverApplier implements IMutationObserverApplier
                 throw new Error('Could not find Node to remove');
             }
 
-            if (removedNode.sheet) {
+            if (removedNode?.sheet) {
                 this.sheets = this.sheets.filter(sheet => {
-                    return JSON.stringify(sheet) !== JSON.stringify(removedNode.sheet);
+                    return JSON.stringify(sheet) !== JSON.stringify(removedNode?.sheet);
                 });
             }
 
