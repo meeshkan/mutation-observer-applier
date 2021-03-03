@@ -121,7 +121,7 @@ export default class MutationObserverApplier implements IMutationObserverApplier
                 info.innerHTML = (node as HTMLElement).innerHTML;
             }
 
-            if (node.sheet) {
+            if ((node as (HTMLStyleElement | HTMLLinkElement)).sheet) {
                 info.sheet = getCSSStyleSheet(node as (HTMLStyleElement | HTMLLinkElement));
             }
 
