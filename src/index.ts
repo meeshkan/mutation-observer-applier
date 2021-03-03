@@ -121,8 +121,8 @@ export default class MutationObserverApplier implements IMutationObserverApplier
                 info.innerHTML = (node as HTMLElement).innerHTML;
             }
 
-            if (info.tagName && info.tagName.toLowerCase() === 'style') {
-                info.sheet = getCSSStyleSheet(node as HTMLStyleElement);
+            if (info.sheet) {
+                info.sheet = getCSSStyleSheet(node as (HTMLStyleElement | HTMLLinkElement));
             }
 
             return info;
