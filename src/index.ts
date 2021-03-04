@@ -228,6 +228,20 @@ export default class MutationObserverApplier implements IMutationObserverApplier
         });
 
         mutation.removedNodes.forEach((removedNode) => {
+            if (removedNode?.sheet) {
+                this.sheets = this.sheets.filter(sheet => {
+                    return JSON.stringify(sheet) !== JSON.stringify(removedNode?.sheet);
+                });
+            }
+
+            if (removedNode?.xpath) {
+                const removedNodeInDom = this.getNodeByXPath(removedNode.xpath) as HTMLElement;
+                if (removedNodeInDom) {
+                    removedNodeInDom.remove();
+                    return;
+                }
+            }
+
             let childInDomToRemove;
             if (previousSiblingInDom) {
                 childInDomToRemove = previousSiblingInDom.nextSibling;
@@ -239,12 +253,6 @@ export default class MutationObserverApplier implements IMutationObserverApplier
 
             if (!childInDomToRemove) {
                 throw new Error('Could not find Node to remove');
-            }
-
-            if (removedNode?.sheet) {
-                this.sheets = this.sheets.filter(sheet => {
-                    return JSON.stringify(sheet) !== JSON.stringify(removedNode?.sheet);
-                });
             }
 
             targetInDom.removeChild(childInDomToRemove);
