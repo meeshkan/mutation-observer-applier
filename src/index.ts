@@ -168,7 +168,7 @@ export default class MutationObserverApplier implements IMutationObserverApplier
 
         const targetInDom = this.getNodeByXPath(targetXPath);
         if (!targetInDom) {
-            throw new Error('Mutation target could not be found in given initial DOM');
+            throw new Error(`Mutation target (with XPath ${targetXPath}) could not be found in given initial DOM`);
         }
 
         return targetInDom;
@@ -200,7 +200,7 @@ export default class MutationObserverApplier implements IMutationObserverApplier
             } else if (addedNode?.name === '#comment') {
                 newNodeInDom = document.createComment(addedNode?.value || '');
             } else {
-                throw new Error('Could not add node because it is of unrecognizable type');
+                throw new Error(`Could not add node (with XPath ${addedNode?.xpath}) because it is of unrecognizable type`);
             }
 
             const addedNodeAttributes = addedNode?.attributes;
@@ -255,12 +255,12 @@ export default class MutationObserverApplier implements IMutationObserverApplier
         const targetInDom = this.getTargetInDomFromMutation(mutation) as HTMLElement;
         const targetAttributes = mutation.target?.attributes;
         if (!targetAttributes) {
-            throw new Error('Attributes of mutation target are missing');
+            throw new Error(`Attributes of mutation target (with XPath ${mutation.target?.xpath}) are missing`);
         }
 
         const mutatedAttributeName = mutation.attributeName as string;
         if (!mutatedAttributeName) {
-            throw new Error('Mutated attribute name is missing');
+            throw new Error(`Mutated attribute name of target (with XPath ${mutation.target?.xpath}) is missing`);
         }
 
         if (!Object.keys(targetAttributes).includes(mutatedAttributeName)) {
