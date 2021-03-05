@@ -234,8 +234,9 @@ export default class MutationObserverApplier implements IMutationObserverApplier
                 });
             }
 
+            let removedNodeInDom;
             if (removedNode?.xpath) {
-                const removedNodeInDom = this.getNodeByXPath(removedNode.xpath) as HTMLElement;
+                removedNodeInDom = this.getNodeByXPath(removedNode.xpath) as HTMLElement;
                 if (removedNodeInDom) {
                     removedNodeInDom.remove();
                     return;
@@ -251,8 +252,16 @@ export default class MutationObserverApplier implements IMutationObserverApplier
                 childInDomToRemove = targetInDom.firstChild;
             }
 
+            if (!childInDomToRemove && !removedNode?.xpath?.startsWith('/html')) {
+                removedNodeInDom = this.getNodeByXPath((mutation.target?.xpath || '') + (removedNode?.xpath || ''));
+                if (removedNodeInDom) {
+                    (removedNodeInDom as HTMLElement).remove();
+                    return;
+                }
+            }
+
             if (!childInDomToRemove) {
-                throw new Error('Could not find Node to remove');
+                return;
             }
 
             targetInDom.removeChild(childInDomToRemove);
