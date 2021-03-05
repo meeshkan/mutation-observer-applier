@@ -155,7 +155,7 @@ export default class MutationObserverApplier implements IMutationObserverApplier
         ).singleNodeValue;
     }
 
-    private getTargetInDomFromMutation(mutation: IMutationRecord): (Node | never) {
+    private getTargetInDomFromMutation(mutation: IMutationRecord): (Node | never | null) {
         const target = mutation.target;
         if (!target) {
             throw new Error('Mutation is missing target element');
@@ -168,7 +168,7 @@ export default class MutationObserverApplier implements IMutationObserverApplier
 
         const targetInDom = this.getNodeByXPath(targetXPath);
         if (!targetInDom) {
-            throw new Error(`Mutation target (with XPath ${targetXPath}) could not be found in given initial DOM`);
+            return null;
         }
 
         return targetInDom;
@@ -176,6 +176,9 @@ export default class MutationObserverApplier implements IMutationObserverApplier
 
     private applyChildListMutation(mutation: IMutationRecord): void {
         const targetInDom = this.getTargetInDomFromMutation(mutation) as HTMLElement;
+        if (!targetInDom) {
+            return;
+        }
 
         let previousSiblingInDom: HTMLElement | null, nextSiblingInDom: HTMLElement | null;
         if (mutation.previousSibling) {
@@ -270,6 +273,10 @@ export default class MutationObserverApplier implements IMutationObserverApplier
 
     private applyAttributesMutation(mutation: IMutationRecord): (void | never) {
         const targetInDom = this.getTargetInDomFromMutation(mutation) as HTMLElement;
+        if (!targetInDom) {
+            return;
+        }
+
         const targetAttributes = mutation.target?.attributes;
         if (!targetAttributes) {
             throw new Error(`Attributes of mutation target (with XPath ${mutation.target?.xpath}) are missing`);
@@ -291,6 +298,10 @@ export default class MutationObserverApplier implements IMutationObserverApplier
 
     private applyCharacterDataMutation(mutation: IMutationRecord): void {
         const targetInDom = this.getTargetInDomFromMutation(mutation) as CharacterData;
+        if (!targetInDom) {
+            return;
+        }
+
         targetInDom.replaceData(0, targetInDom.data.length, mutation.target?.data || '');
     }
 
