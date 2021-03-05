@@ -1,6 +1,6 @@
 {
   "name": "@meeshkanml/mutation-observer-applier",
-  "version": "1.0.8",
+  "version": "1.0.9",
   "description": "Apply MutationObserver mutations to a DOM",
   "main": "build/index.js",
   "scripts": {
