@@ -183,7 +183,7 @@ test('adds stylesheets', () => {
     addedNodes: [styleElement],
     removedNodes: [],
     previousSibling: styleElement.previousSibling,
-    nextSibling: styleElement.previousSibling,
+    nextSibling: styleElement.nextSibling,
     attributeName: null,
     attributeNamespace: null,
   }];
@@ -212,7 +212,7 @@ test('removes stylesheets', () => {
     addedNodes: [],
     removedNodes: [styleElement],
     previousSibling: styleElement.previousSibling,
-    nextSibling: styleElement.previousSibling,
+    nextSibling: styleElement.nextSibling,
     attributeName: null,
     attributeNamespace: null,
   }];
