@@ -107,19 +107,32 @@ test('adds elements to the DOM tree', () => {
   const targetNode = document.querySelector('ul');
   const mod = new MutationObserverApplier(dom.serialize());
   const addedNode = document.createElement('li');
-  addedNode.appendChild(document.createTextNode('Chocolate'));
+  const addedTextNode = document.createTextNode('Chocolate');
+  addedNode.appendChild(addedTextNode);
   targetNode.appendChild(addedNode);
 
-  const mutations = [{
-    type: 'childList',
-    target: targetNode,
-    addedNodes: [addedNode],
-    removedNodes: [],
-    previousSibling: addedNode.previousSibling,
-    nextSibling: null,
-    attributeName: null,
-    attributeNamespace: null,
-  }];
+  const mutations = [
+    {
+      type: 'childList',
+      target: targetNode,
+      addedNodes: [addedNode],
+      removedNodes: [],
+      previousSibling: addedNode.previousSibling,
+      nextSibling: addedNode.nextSibling,
+      attributeName: null,
+      attributeNamespace: null,
+    },
+    {
+      type: 'childList',
+      target: addedNode,
+      addedNodes: [addedTextNode],
+      removedNodes: [],
+      previousSibling: addedTextNode.previousSibling,
+      nextSibling: addedTextNode.nextSibling,
+      attributeName: null,
+      attributeNamespace: null,
+    }
+  ];
 
   const serializedMutations = mod.serializeMutations(mutations);
   mod.applyMutations(serializedMutations);
