@@ -98,46 +98,46 @@ export default class MutationObserverApplier implements IMutationObserverApplier
         });
     }
 
-    serializeMutations(mutations: MutationRecord[]): IMutationRecord[] {
-        const nodeInfo = (
-            node: Node | null,
-            include?: Record<INodeInfoIncludeKey, boolean>
-        ): (INode | null) => {
-            if (!node) {
-                return null;
-            }
+    private serializeNode(
+        node: Node | null,
+        include?: Record<INodeInfoIncludeKey, boolean>
+    ): (INode | null) {
+        if (!node) {
+            return null;
+        }
 
-            const info: INode = {
-                type: node.nodeType,
-                name: node.nodeName,
-                tagName: (node as HTMLElement).tagName,
-                value: node.nodeValue,
-                attributes: getAttributes(node as HTMLElement),
-                xpath: getXPath(node),
-                data: (node as CharacterData).data,
-            };
-
-            if (include?.innerHTML) {
-                info.innerHTML = (node as HTMLElement).innerHTML;
-            }
-
-            if ((node as (HTMLStyleElement | HTMLLinkElement)).sheet) {
-                info.sheet = getCSSStyleSheet(node as (HTMLStyleElement | HTMLLinkElement));
-            }
-
-            return info;
+        const info: INode = {
+            type: node.nodeType,
+            name: node.nodeName,
+            tagName: (node as HTMLElement).tagName,
+            value: node.nodeValue,
+            attributes: getAttributes(node as HTMLElement),
+            xpath: getXPath(node),
+            data: (node as CharacterData).data,
         };
 
+        if (include?.innerHTML) {
+            info.innerHTML = (node as HTMLElement).innerHTML;
+        }
+
+        if ((node as (HTMLStyleElement | HTMLLinkElement)).sheet) {
+            info.sheet = getCSSStyleSheet(node as (HTMLStyleElement | HTMLLinkElement));
+        }
+
+        return info;
+    }
+
+    serializeMutations(mutations: MutationRecord[]): IMutationRecord[] {
         return mutations.map((mutation: MutationRecord) => {
             return {
                 type: mutation.type,
-                target: nodeInfo(mutation.target),
+                target: this.serializeNode(mutation.target),
                 addedNodes: Array.from(mutation.addedNodes).map(node => {
-                    return nodeInfo(node, { innerHTML: true });
+                    return this.serializeNode(node, { innerHTML: true });
                 }),
-                removedNodes: Array.from(mutation.removedNodes).map(node => nodeInfo(node)),
-                previousSibling: nodeInfo(mutation.previousSibling),
-                nextSibling: nodeInfo(mutation.nextSibling),
+                removedNodes: Array.from(mutation.removedNodes).map(node => this.serializeNode(node)),
+                previousSibling: this.serializeNode(mutation.previousSibling),
+                nextSibling: this.serializeNode(mutation.nextSibling),
                 attributeName: mutation.attributeName,
                 attributeNamespace: mutation.attributeNamespace,
             };
@@ -146,13 +146,20 @@ export default class MutationObserverApplier implements IMutationObserverApplier
 
     private getNodeByXPath(xpath: string): (Node | null) {
         const document = this.dom.window.document;
-        return document.evaluate(
-            xpath,
-            document,
-            null,
-            XPathResult.FIRST_ORDERED_NODE_TYPE,
-            null
-        ).singleNodeValue;
+        let node: (Node | null);
+        try {
+            node = document.evaluate(
+                xpath,
+                document,
+                null,
+                XPathResult.FIRST_ORDERED_NODE_TYPE,
+                null
+            ).singleNodeValue;
+        } catch (error) {
+            node = null;
+        }
+
+        return node;
     }
 
     private getTargetInDomFromMutation(mutation: IMutationRecord): (Node | never | null) {
@@ -193,49 +200,6 @@ export default class MutationObserverApplier implements IMutationObserverApplier
             }
         }
 
-        mutation.addedNodes.forEach((addedNode) => {
-            const addedNodeAlreadyInDom = this.getNodeByXPath(addedNode?.xpath || '') as HTMLElement;
-            if (addedNodeAlreadyInDom) {
-                addedNodeAlreadyInDom.remove();
-            }
-
-            const document = this.dom.window.document;
-
-            let newNodeInDom: Node;
-            if (addedNode?.tagName) {
-                newNodeInDom = document.createElement(addedNode.tagName);
-            } else if (addedNode?.name === '#text') {
-                newNodeInDom = document.createTextNode(addedNode?.value || ''); 
-            } else if (addedNode?.name === '#comment') {
-                newNodeInDom = document.createComment(addedNode?.value || '');
-            } else {
-                throw new Error(`Could not add node (with XPath ${addedNode?.xpath}) because it is of unrecognizable type`);
-            }
-
-            const addedNodeAttributes = addedNode?.attributes;
-            Object.keys(addedNodeAttributes || []).forEach((attributeName) => {
-                if (!Object.keys(addedNodeAttributes).includes(attributeName)) {
-                    return;
-                }
-
-                const attributeValue = addedNodeAttributes[attributeName];
-                (newNodeInDom as HTMLElement).setAttribute(attributeName, attributeValue);
-            });
-
-            (newNodeInDom as HTMLElement).innerHTML = addedNode?.innerHTML || '';
-            if (addedNode.sheet) {
-                this.sheets.push(addedNode.sheet);
-            }
-
-            if (previousSiblingInDom) {
-                targetInDom.insertBefore(newNodeInDom, previousSiblingInDom.nextSibling);
-            } else if (nextSiblingInDom) {
-                targetInDom.insertBefore(newNodeInDom, nextSiblingInDom);
-            } else {
-                targetInDom.appendChild(newNodeInDom);
-            }
-        });
-
         mutation.removedNodes.forEach((removedNode) => {
             if (removedNode?.sheet) {
                 this.sheets = this.sheets.filter(sheet => {
@@ -274,6 +238,83 @@ export default class MutationObserverApplier implements IMutationObserverApplier
             }
 
             targetInDom.removeChild(childInDomToRemove);
+        });
+
+        mutation.addedNodes.forEach((addedNode) => {
+            const addedNodeAlreadyInDom = this.getNodeByXPath(addedNode?.xpath || '') as HTMLElement;
+
+            const document = this.dom.window.document;
+
+            let newNodeInDom: Node;
+            if (addedNode?.tagName) {
+                if (['svg', 'circle', 'ellipse', 'line', 'path', 'polygon', 'polyline', 'rect'].includes(addedNode?.tagName?.toLowerCase())) {
+                    newNodeInDom = document.createElementNS('http://www.w3.org/2000/svg', addedNode?.tagName);
+                } else {
+                    newNodeInDom = document.createElement(addedNode?.tagName);
+                }
+            } else if (addedNode?.type === Node.TEXT_NODE) {
+                newNodeInDom = document.createTextNode(addedNode?.value || ''); 
+            } else if (addedNode?.type === Node.COMMENT_NODE) {
+                newNodeInDom = document.createComment(addedNode?.value || '');
+            } else {
+                throw new Error(`Could not add node (with XPath ${addedNode?.xpath}) because it is of unrecognizable type`);
+            }
+
+            const addedNodeAttributes = addedNode?.attributes;
+            Object.keys(addedNodeAttributes || []).forEach((attributeName) => {
+                if (!Object.keys(addedNodeAttributes).includes(attributeName)) {
+                    return;
+                }
+
+                const attributeValue = addedNodeAttributes[attributeName];
+                (newNodeInDom as HTMLElement).setAttribute(attributeName, attributeValue);
+            });
+
+            (newNodeInDom as HTMLElement).innerHTML = addedNode?.innerHTML || '';
+            if (addedNode.sheet) {
+                this.sheets.push(addedNode.sheet);
+            }
+
+            if (previousSiblingInDom) {
+                targetInDom.insertBefore(newNodeInDom, previousSiblingInDom.nextSibling);
+            } else if (nextSiblingInDom) {
+                targetInDom.insertBefore(newNodeInDom, nextSiblingInDom);
+            } else {
+                const indexFromXPathObject = /\[([0-9])\]$/.exec(addedNode?.xpath || '');
+                if (indexFromXPathObject) {
+                    const indexFromXPath = parseInt(indexFromXPathObject[1]);
+                    if ([Node.TEXT_NODE, Node.COMMENT_NODE].includes(addedNode?.type)) {
+                        const textOrCommentChildNodes = Array.from(targetInDom.childNodes)
+                            .filter(node => node?.nodeType === addedNode?.type);
+
+                        if (textOrCommentChildNodes.length > indexFromXPath) {
+                            targetInDom.insertBefore(newNodeInDom, textOrCommentChildNodes[indexFromXPath]);
+                        } else {
+                            targetInDom.appendChild(newNodeInDom);
+                        }
+                    } else {
+                        const elementChildNodes = Array.from(targetInDom.children)
+                            .filter((node) => node?.tagName?.toLowerCase() === addedNode?.tagName?.toLowerCase());
+
+                        if (elementChildNodes.length > indexFromXPath) {
+                            targetInDom.insertBefore(newNodeInDom, elementChildNodes[indexFromXPath]);
+                        } else {
+                            targetInDom.appendChild(newNodeInDom);
+                        }
+                    }
+                } else {
+                    targetInDom.appendChild(newNodeInDom);
+                }
+            }
+
+            if (
+                addedNodeAlreadyInDom && (
+                    addedNodeAlreadyInDom.isEqualNode(newNodeInDom) ||
+                    addedNode?.tagName?.toLowerCase() === 'body'
+                )
+            ) {
+                addedNodeAlreadyInDom.remove();
+            }
         });
     }
 
