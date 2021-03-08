@@ -5,6 +5,16 @@ import type { IAttributes } from './lib/attributes';
 import { getCSSStyleSheet } from './lib/stylesheets';
 import type { IStyleSheet } from './lib/stylesheets';
 
+const NodeType = {
+    ELEMENT_NODE: 1,
+    ATTRIBUTE_NODE: 2,
+    TEXT_NODE: 3,
+    COMMENT_NODE: 8,
+    DOCUMENT_NODE: 9,
+    DOCUMENT_TYPE_NODE: 10,
+    DOCUMENT_FRAGMENT_NODE: 11,
+};
+
 const XPathResult = {
     ANY_TYPE: 0,
     NUMBER_TYPE: 1,
@@ -252,9 +262,9 @@ export default class MutationObserverApplier implements IMutationObserverApplier
                 } else {
                     newNodeInDom = document.createElement(addedNode?.tagName);
                 }
-            } else if (addedNode?.type === Node.TEXT_NODE) {
+            } else if (addedNode?.type === NodeType.TEXT_NODE) {
                 newNodeInDom = document.createTextNode(addedNode?.value || ''); 
-            } else if (addedNode?.type === Node.COMMENT_NODE) {
+            } else if (addedNode?.type === NodeType.COMMENT_NODE) {
                 newNodeInDom = document.createComment(addedNode?.value || '');
             } else {
                 throw new Error(`Could not add node (with XPath ${addedNode?.xpath}) because it is of unrecognizable type`);
@@ -283,7 +293,7 @@ export default class MutationObserverApplier implements IMutationObserverApplier
                 const indexFromXPathObject = /\[([0-9])\]$/.exec(addedNode?.xpath || '');
                 if (indexFromXPathObject) {
                     const indexFromXPath = parseInt(indexFromXPathObject[1]);
-                    if ([Node.TEXT_NODE, Node.COMMENT_NODE].includes(addedNode?.type)) {
+                    if ([NodeType.TEXT_NODE, NodeType.COMMENT_NODE].includes(addedNode?.type)) {
                         const textOrCommentChildNodes = Array.from(targetInDom.childNodes)
                             .filter(node => node?.nodeType === addedNode?.type);
 
