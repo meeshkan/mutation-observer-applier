@@ -64,6 +64,7 @@ export interface IMutationObserverApplier {
     serializeStyleSheets(styleSheets: StyleSheetList): IStyleSheet[];
     serializeMutations(mutations: MutationRecord[]): IMutationRecord[];
     applyMutations(serializedMutations: IMutationRecord[]): void;
+    tearDown(): void;
 }
 
 export default class MutationObserverApplier implements IMutationObserverApplier {
@@ -369,5 +370,9 @@ export default class MutationObserverApplier implements IMutationObserverApplier
 
     applyMutations(serializedMutations: IMutationRecord[]): void {
         serializedMutations.forEach(this.applyMutation.bind(this));
+    }
+
+    tearDown(): void {
+        this.dom.window.close();
     }
 }
