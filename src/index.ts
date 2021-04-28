@@ -198,17 +198,14 @@ export default class MutationObserverApplier implements IMutationObserverApplier
             return;
         }
 
-        let previousSiblingInDom: HTMLElement | null, nextSiblingInDom: HTMLElement | null;
-        if (mutation.previousSibling) {
-            if (mutation.previousSibling.xpath) {
-                previousSiblingInDom = this.getNodeByXPath(mutation.previousSibling.xpath) as HTMLElement;
-            }
+        let previousSiblingInDom: HTMLElement | null;
+        if (mutation.previousSibling?.xpath) {
+            previousSiblingInDom = this.getNodeByXPath(mutation.previousSibling.xpath) as HTMLElement;
         }
 
-        if (mutation.nextSibling) {
-            if (mutation.nextSibling.xpath) {
-                nextSiblingInDom = this.getNodeByXPath(mutation.nextSibling.xpath) as HTMLElement;
-            }
+        let nextSiblingInDom: HTMLElement | null;
+        if (mutation.nextSibling?.xpath) {
+            nextSiblingInDom = this.getNodeByXPath(mutation.nextSibling.xpath) as HTMLElement;
         }
 
         mutation.removedNodes.forEach((removedNode) => {
