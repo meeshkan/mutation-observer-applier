@@ -24,6 +24,8 @@ test('adds attributes', () => {
   const serializedMutations = mod.serializeMutations(mutations);
   mod.applyMutations(serializedMutations);
   expect(mod.DOM).toBe(dom.serialize());
+  window.close();
+  mod.tearDown();
 });
 
 test('edits attributes', () => {
@@ -49,6 +51,8 @@ test('edits attributes', () => {
   const serializedMutations = mod.serializeMutations(mutations);
   mod.applyMutations(serializedMutations);
   expect(mod.DOM).toBe(dom.serialize());
+  window.close();
+  mod.tearDown();
 });
 
 test('removes attributes', () => {
@@ -74,6 +78,8 @@ test('removes attributes', () => {
   const serializedMutations = mod.serializeMutations(mutations);
   mod.applyMutations(serializedMutations);
   expect(mod.DOM).toBe(dom.serialize());
+  window.close();
+  mod.tearDown();
 });
 
 test('modifies character data', () => {
@@ -98,6 +104,8 @@ test('modifies character data', () => {
   const serializedMutations = mod.serializeMutations(mutations);
   mod.applyMutations(serializedMutations);
   expect(mod.DOM).toBe(dom.serialize());
+  window.close();
+  mod.tearDown();
 });
 
 test('adds elements to the DOM tree', () => {
@@ -137,6 +145,8 @@ test('adds elements to the DOM tree', () => {
   const serializedMutations = mod.serializeMutations(mutations);
   mod.applyMutations(serializedMutations);
   expect(mod.DOM).toBe(dom.serialize());
+  window.close();
+  mod.tearDown();
 });
 
 test('removes elements from the DOM tree', () => {
@@ -164,6 +174,8 @@ test('removes elements from the DOM tree', () => {
   const serializedMutations = mod.serializeMutations(mutations);
   mod.applyMutations(serializedMutations);
   expect(mod.DOM).toBe(dom.serialize());
+  window.close();
+  mod.tearDown();
 });
 
 test('adds stylesheets', () => {
@@ -192,6 +204,8 @@ test('adds stylesheets', () => {
   mod.applyMutations(serializedMutations);
   expect(mod.styleSheets).toStrictEqual([getCSSStyleSheet(styleElement)]);
   expect(mod.DOM).toBe(dom.serialize());
+  window.close();
+  mod.tearDown();
 });
 
 test('removes stylesheets', () => {
@@ -222,4 +236,6 @@ test('removes stylesheets', () => {
   expect(mod.styleSheets).toStrictEqual([]);
   styleElement.remove();
   expect(mod.DOM).toBe(dom.serialize());
+  window.close();
+  mod.tearDown();
 });
