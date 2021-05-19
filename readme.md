@@ -17,9 +17,8 @@ The library is written in typescript and uses the standard Web API types defined
 
 ## How it is used
 
-At Meeshkan, we use this library to create videos of interactions with a DOM. Since it was incorporated into our stack, it has reduced the CPU usage of our recording script by ~70%.
+At [Meeshkan](https://meeshkan.com/?utm_source=github&utm_medium=readme&utm_campaign=mutation_observer_diff), we use this library to create videos of interactions with a DOM. Since it was incorporated into our stack, it has reduced the CPU usage of our recording script by ~70%.
 
 ## License
 
 MIT © [Meeshkan](http://meeshkan.com/)
-
